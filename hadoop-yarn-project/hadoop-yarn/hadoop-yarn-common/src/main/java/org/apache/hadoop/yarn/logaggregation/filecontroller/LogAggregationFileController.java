@@ -113,6 +113,12 @@ public abstract class LogAggregationFileController {
 
   protected boolean fsSupportsChmod = true;
 
+  /**
+   * Permissions for the Application directory.
+   * This can be configured via yarn.nodemanager.remote-app-log-dir.app-dir.permissions.
+   */
+  protected FsPermission appDirPermissions;
+
   private static class FsLogPathKey {
     private Class<? extends FileSystem> fsType;
     private Path logPath;
@@ -166,6 +172,7 @@ public abstract class LogAggregationFileController {
 
     extractRemoteRootLogDir();
     extractRemoteRootLogDirSuffix();
+    initAppDirPermissions();
 
     initInternal(conf);
   }
@@ -374,6 +381,43 @@ public abstract class LogAggregationFileController {
   }
 
   /**
+   * Initialize the app dir permissions from configuration.
+   * If not configured, use the default value (770).
+   */
+  private void initAppDirPermissions() {
+    String permKey = String.format(
+        YarnConfiguration.LOG_AGGREGATION_REMOTE_APP_LOG_DIR_FMT,
+        fileControllerName)
+        + ".app-dir.permissions";
+    String permStr = conf.get(permKey);
+    if (permStr == null || permStr.isEmpty()) {
+      permStr = conf.get(
+          YarnConfiguration.NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS);
+    }
+    if (permStr == null || permStr.isEmpty()) {
+      /// Use default value: 0770
+      this.appDirPermissions = APP_DIR_PERMISSIONS;
+    } else {
+      try {
+        // Parse the permission string (e.g., "770", "777", "1777")
+        short perm = 0;
+        if (permStr.startsWith("0")) {
+          // Octal format like "0770"
+          perm = Short.parseShort(permStr.substring(1), 8);
+        } else {
+          // Decimal format like "770"
+          perm = Short.parseShort(permStr, 8);
+        }
+        this.appDirPermissions = FsPermission.createImmutable(perm);
+      } catch (NumberFormatException e) {
+        LOG.warn("Invalid permission '{}' for app dir, using default: {}",
+            permStr, APP_DIR_PERMISSIONS);
+        this.appDirPermissions = APP_DIR_PERMISSIONS;
+      }
+    }
+  }
+
+  /**
    * Verify and create the remote log directory.
    */
   public void verifyAndCreateRemoteLogDir() {
@@ -520,7 +564,7 @@ public abstract class LogAggregationFileController {
             LinkedList<Path> pathsToCreate = new LinkedList<>();
 
             while (!curDir.equals(rootLogDir)) {
-              if (!checkExists(remoteFS, curDir, APP_DIR_PERMISSIONS)) {
+              if (!checkExists(remoteFS, curDir, appDirPermissions)) {
                 pathsToCreate.addFirst(curDir);
                 curDir = curDir.getParent();
               } else {
@@ -529,7 +573,7 @@ public abstract class LogAggregationFileController {
             }
 
             for (Path path : pathsToCreate) {
-              createDir(remoteFS, path, APP_DIR_PERMISSIONS);
+              createDir(remoteFS, path, appDirPermissions);
             }
           } catch (IOException e) {
             LOG.error("Failed to setup application log directory for "
@@ -573,8 +617,8 @@ public abstract class LogAggregationFileController {
     try {
       FileStatus appDirStatus = fs.getFileStatus(path);
       if (fsSupportsChmod) {
-        if (!APP_DIR_PERMISSIONS.equals(appDirStatus.getPermission())) {
-          fs.setPermission(path, APP_DIR_PERMISSIONS);
+        if (!appDirPermissions.equals(appDirStatus.getPermission())) {
+          fs.setPermission(path, appDirPermissions);
         }
       }
     } catch (FileNotFoundException fnfe) {

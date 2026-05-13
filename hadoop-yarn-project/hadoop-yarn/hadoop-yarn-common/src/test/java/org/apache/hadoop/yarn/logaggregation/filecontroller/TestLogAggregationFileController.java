@@ -192,4 +192,87 @@ public class TestLogAggregationFileController {
     verify(fs, times(1))
         .delete(argThat(new PathContainsString(".permission_check")), eq(false));
   }
+
+  @Test
+  void testAppDirPermissionsDefault() throws Exception {
+    Configuration conf = new Configuration();
+    LogAggregationFileController controller = mock(
+        LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
+    FileSystem fs = mock(FileSystem.class);
+    doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+
+    controller.initialize(conf, "TFile");
+
+    // Default value should be 0770
+    FsPermission expected = FsPermission.createImmutable((short) 0770);
+    assertTrue(controller.appDirPermissions.equals(expected),
+        "Default app dir permissions should be 0770");
+  }
+
+  @Test
+  void testAppDirPermissionsOctalFormat() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS, "777");
+    LogAggregationFileController controller = mock(
+        LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
+    FileSystem fs = mock(FileSystem.class);
+    doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+
+    controller.initialize(conf, "TFile");
+
+    FsPermission expected = FsPermission.createImmutable((short) 0777);
+    assertTrue(controller.appDirPermissions.equals(expected),
+        "App dir permissions should be 0777");
+  }
+
+  @Test
+  void testAppDirPermissionsOctalFormatWithLeadingZero() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS, "0777");
+    LogAggregationFileController controller = mock(
+        LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
+    FileSystem fs = mock(FileSystem.class);
+    doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+
+    controller.initialize(conf, "TFile");
+
+    FsPermission expected = FsPermission.createImmutable((short) 0777);
+    assertTrue(controller.appDirPermissions.equals(expected),
+        "App dir permissions should be 0777");
+  }
+
+  @Test
+  void testAppDirPermissionsStickyBit() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS, "1777");
+    LogAggregationFileController controller = mock(
+        LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
+    FileSystem fs = mock(FileSystem.class);
+    doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+
+    controller.initialize(conf, "TFile");
+
+    FsPermission expected = FsPermission.createImmutable((short) 01777);
+    assertTrue(controller.appDirPermissions.equals(expected),
+        "App dir permissions should be 01777 with sticky bit");
+  }
+
+  @Test
+  void testAppDirPermissionsInvalidValue() throws Exception {
+    FileSystem fs = mock(FileSystem.class);
+    doReturn(new URI("")).when(fs).getUri();
+
+    Configuration conf = new Configuration();
+    conf.set(YarnConfiguration.NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS, "invalid");
+    LogAggregationFileController controller = mock(
+        LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
+    doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+
+    controller.initialize(conf, "TFile");
+
+    // Should fall back to default when invalid value is provided
+    FsPermission expected = FsPermission.createImmutable((short) 0770);
+    assertTrue(controller.appDirPermissions.equals(expected),
+        "Should fall back to default 0770 for invalid value");
+  }
 }

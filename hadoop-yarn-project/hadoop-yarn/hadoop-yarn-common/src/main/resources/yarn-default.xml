@@ -1714,6 +1714,18 @@
   </property>
 
   <property>
+    <description>The permissions for the application log directory
+    under the remote app log dir. The permissions can be specified
+    in octal format (e.g., "770", "777") or decimal format.
+    The default value is "770" which means only the owner and group
+    can access the directory. Set to "777" to allow all users to
+    access the application log directories.
+    </description>
+    <name>yarn.nodemanager.remote-app-log-dir.app-dir.permissions</name>
+    <value>770</value>
+  </property>
+
+  <property>
     <description>Generate additional logs about container launches.
     Currently, this creates a copy of the launch script and lists the
     directory contents of the container work dir. When listing directory

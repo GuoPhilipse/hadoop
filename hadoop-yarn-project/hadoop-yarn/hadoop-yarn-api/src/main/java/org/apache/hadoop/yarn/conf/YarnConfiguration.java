@@ -1699,6 +1699,13 @@ public class YarnConfiguration extends Configuration {
   public static final String NM_REMOTE_APP_LOG_DIR_GROUPNAME =
       NM_PREFIX + "remote-app-log-dir.groupname";
 
+  /**
+   * Specifies the permissions for the application log directory
+   * under the remote app log dir.
+   */
+  public static final String NM_REMOTE_APP_LOG_DIR_APP_DIR_PERMISSIONS =
+      NM_PREFIX + "remote-app-log-dir.app-dir.permissions";
+
   public static final String YARN_LOG_SERVER_URL =
     YARN_PREFIX + "log.server.url";
 
