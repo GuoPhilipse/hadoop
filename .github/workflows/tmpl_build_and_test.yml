@@ -72,6 +72,7 @@ env:
     -Dsurefire.rerunFailingTestsCount=2
 
 jobs:
+  # TODO: use common composite actions in .github/actions/
   precondition:
     name: Preparation
     runs-on: ubuntu-24.04
@@ -117,16 +118,16 @@ jobs:
         with:
           fetch-depth: 0
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@06fb636fac595d6fb4b28a5dfcb21a6f5091859c # v4.5.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - name: Build and push ${{ inputs.os }} base build image for ${{ inputs.branch }}
         id: docker_build_base
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./dev-support/docker/
           file: ./dev-support/docker/Dockerfile_${{ inputs.os }}
@@ -146,7 +147,7 @@ jobs:
           UserSpecificDocker
       - name: Build and push ${{ inputs.os }} build image for ${{ inputs.branch }}
         id: docker_build_gha
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: ./dev-support/docker/
           file: /tmp/Dockerfile.gha
@@ -291,6 +292,7 @@ jobs:
               -pl :hadoop-tos
               -pl :hadoop-huaweicloud
               -pl :hadoop-cloud-storage
+              -pl :hadoop-bos
               -pl :hadoop-dist
           # skipped modules
           # -pl :hadoop-yarn-applications-catalog-webapp
@@ -319,5 +321,5 @@ jobs:
         with:
           name: unit-test-logs-${{ matrix.comment }}-java${{ inputs.java }})-${{ inputs.os }}-${{ inputs.branch }}
           path: |
-            **/target/*.log
-            **/target/*.xml
+            **/target/**/*.log
+            **/target/surefire-reports/**

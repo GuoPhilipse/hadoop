@@ -24,7 +24,6 @@ import org.apache.hadoop.ipc.metrics.RpcMetrics;
 
 import org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.thirdparty.protobuf.ServiceException;
-import org.apache.hadoop.util.concurrent.SubjectInheritingThread;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -966,7 +965,7 @@ public class TestRPC extends TestRpcBase {
       for (int i = 0; i < numConcurrentRPC; i++) {
         final int num = i;
         final TestRpcService proxy = getClient(addr, conf);
-        Thread rpcThread = new SubjectInheritingThread(new Runnable() {
+        Thread rpcThread = new Thread(new Runnable() {
           @Override
           public void run() {
             try {
@@ -1944,8 +1943,12 @@ public class TestRPC extends TestRpcBase {
           proxy.ping(null, newEmptyRequest());
           fail(reqName + " didn't fail");
         } catch (ServiceException e) {
-          RemoteException re = (RemoteException)e.getCause();
-          assertEquals(expectedIOE, re.unwrapRemoteException(), reqName);
+          if (e.getCause() instanceof RemoteException) {
+            RemoteException re = (RemoteException)e.getCause();
+            assertEquals(expectedIOE, re.unwrapRemoteException(), reqName);
+          } else {
+            throw e;
+          }
         }
         // check authorizations to ensure new connection when expected,
         // then conclusively determine if connections are disconnected

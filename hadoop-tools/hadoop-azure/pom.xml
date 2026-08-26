@@ -386,7 +386,7 @@
                 <configuration>
                   <forkCount>${testsThreadCount}</forkCount>
                   <reuseForks>false</reuseForks>
-                  <argLine>${maven-surefire-plugin.argLine} -DminiClusterDedicatedDirs=true</argLine>
+                  <argLine>${maven-surefire-plugin.argLine} @{argLine} -DminiClusterDedicatedDirs=true</argLine>
                   <forkedProcessTimeoutInSeconds>${fs.azure.scale.test.timeout}</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <test.build.data>${test.build.data}/${surefire.forkNumber}</test.build.data>
@@ -423,7 +423,7 @@
                   <reuseForks>true</reuseForks>
                   <parallel>both</parallel>
                   <threadCount>${testsThreadCount}</threadCount>
-                  <argLine>${maven-surefire-plugin.argLine} -DminiClusterDedicatedDirs=true</argLine>
+                  <argLine>${maven-surefire-plugin.argLine} @{argLine} -DminiClusterDedicatedDirs=true</argLine>
                   <forkedProcessTimeoutInSeconds>${fs.azure.scale.test.timeout}</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <!-- Tell tests that they are being executed in parallel -->
@@ -456,6 +456,7 @@
                     <exclude>**/azurebfs/ITestSmallWriteOptimization.java</exclude>
                     <exclude>**/azurebfs/ITestAbfsStreamStatistics*.java</exclude>
                     <exclude>**/azurebfs/services/ITestReadBufferManager.java</exclude>
+                    <exclude>**/azurebfs/services/ITestVectoredRead.java</exclude>
                     <exclude>**/azurebfs/commit/*.java</exclude>
                   </excludes>
 
@@ -471,7 +472,7 @@
                   <forkCount>${testsThreadCount}</forkCount>
                   <reuseForks>false</reuseForks>
                   <!--NOTICE: hadoop contract tests methods can not be ran in parallel-->
-                  <argLine>${maven-surefire-plugin.argLine} -DminiClusterDedicatedDirs=true</argLine>
+                  <argLine>${maven-surefire-plugin.argLine} @{argLine} -DminiClusterDedicatedDirs=true</argLine>
                   <forkedProcessTimeoutInSeconds>${fs.azure.scale.test.timeout}</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <!-- Tell tests that they are being executed in parallel -->
@@ -497,6 +498,7 @@
                     <include>**/azurebfs/ITestSmallWriteOptimization.java</include>
                     <include>**/azurebfs/services/ITestReadBufferManager.java</include>
                     <include>**/azurebfs/ITestAbfsStreamStatistics*.java</include>
+                    <include>**/azurebfs/services/ITestVectoredRead.java</include>
                     <include>**/azurebfs/commit/*.java</include>
                   </includes>
                 </configuration>
@@ -567,7 +569,7 @@
                 <configuration>
                   <forkCount>${testsThreadCount}</forkCount>
                   <reuseForks>false</reuseForks>
-                  <argLine>${maven-surefire-plugin.argLine} -DminiClusterDedicatedDirs=true</argLine>
+                  <argLine>${maven-surefire-plugin.argLine} @{argLine} -DminiClusterDedicatedDirs=true</argLine>
                   <forkedProcessTimeoutInSeconds>${fs.azure.scale.test.timeout}</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <test.build.data>${test.build.data}/${surefire.forkNumber}</test.build.data>
@@ -601,7 +603,7 @@
                 <configuration>
                   <forkCount>${testsThreadCount}</forkCount>
                   <reuseForks>false</reuseForks>
-                  <argLine>${maven-surefire-plugin.argLine} -DminiClusterDedicatedDirs=true</argLine>
+                  <argLine>${maven-surefire-plugin.argLine} @{argLine} -DminiClusterDedicatedDirs=true</argLine>
                   <forkedProcessTimeoutInSeconds>${fs.azure.scale.test.timeout}</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <!-- Tell tests that they are being executed in parallel -->

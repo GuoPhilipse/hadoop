@@ -71,6 +71,7 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.ha.HAServiceProtocol;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -287,6 +288,7 @@ public class RouterAsyncClientProtocol extends RouterClientProtocol {
     RemoteParam dstParam = getRenameDestinations(locs, dstLocations);
     if (locs.isEmpty()) {
       rbfRename.routerFedRename(src, dst, srcLocations, dstLocations);
+      asyncComplete(null);
       return;
     }
     RemoteMethod method = new RemoteMethod("rename2",
@@ -1212,6 +1214,12 @@ public class RouterAsyncClientProtocol extends RouterClientProtocol {
     rpcServer.checkOperation(NameNode.OperationCategory.WRITE, true);
     getSecurityManager().cancelDelegationToken(token);
     asyncComplete(null);
+  }
+
+  @Override
+  public HAServiceProtocol.HAServiceState getHAServiceState() {
+    asyncComplete(super.getHAServiceState());
+    return asyncReturn(HAServiceProtocol.HAServiceState.class);
   }
 
 }
